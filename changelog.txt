@@ -1,0 +1,41 @@
+11/19/14
+	-Updated window init to use code from NeonHelium's lwjgl tutorial.
+		-Bodies are now visible
+		-TODO Spheres are way too big (RESOLVED - they weren't, the bodies were just too close)
+11/20/14
+	-Added focusing to bodies (still kinda shitty)
+	-Colored bodies
+	-TODO where is the moon? (RESOLVED - They were inside the sun)
+11/21/14
+	-Fixed initial positions of moons
+	-Added integrator (leapfrog)
+	-Fixed depth test by reversing far and near depth ranges (This is very sketchy) (REMOVED)
+	-Added conics
+	-TODO separate render and physics (RESOLVED)
+	-Switched back to frustum
+		-TODO fix aspect (RESOLVED - integer division)
+11/22/14
+	-Fixed aspect ratio
+	-Threads
+	-TODO finish adding craft to LeapFrog (RESOLVED)
+11/23/14
+	-Added craft to LeapFrog
+	-Added craft render
+	-TODO add maneuvers
+11/24-26/14 (Mostly 26)
+	-Added GUI
+		-Added JTree of SimObjects
+			-Click an object to focus on it
+	-Sorted objects into tree structure by parents
+	-Added JPopupMenu for SimObjects
+		-Option to toggle conics
+	-TODO properties window for selected object
+	-TODO draw something for ships
+	-TODO fix line 185 of GUI (RESOLVED)
+11/27/14
+	-Re-implemented timer (timing seems accurate)
+	-Added speed buttons (kinda shitty)
+	-TODO maneuvers/flight plans
+	-TODO time info on screen (elapsed time, delta-time, etc)
+11/30/14
+	-TODO window requests position data from physics on each frame. Lock physics for less time
