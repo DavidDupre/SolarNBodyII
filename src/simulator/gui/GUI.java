@@ -161,9 +161,11 @@ public class GUI {
 		private DefaultMutableTreeNode root;
 		private SimObject requestedObject = bodies.get(Defines.FOCUS_BODY);
 		private List<DefaultMutableTreeNode> nodes;
+		private ClassLoader cl;
 
 		public ObjectTree() {
 			// create the root note
+			cl = this.getClass().getClassLoader();
 			root = new DefaultMutableTreeNode("System");
 			// create the tree by passing in the root node
 			tree = new JTree(root);
@@ -173,12 +175,12 @@ public class GUI {
 
 			// Renderer for custom icons
 			tree.setCellRenderer(new DefaultTreeCellRenderer() {
-				private Icon starIcon = new ImageIcon("res/icons/star.png");
-				private Icon planetIcon = new ImageIcon("res/icons/planet.png");
-				private Icon asteroidIcon = new ImageIcon(
-						"res/icons/asteroid.png");
-				private Icon moonIcon = new ImageIcon("res/icons/moon.png");
-				private Icon craftIcon = new ImageIcon("res/icons/craft.png");
+				private Icon starIcon = new ImageIcon(cl.getResource("simulator/images/star.png"));
+				private Icon planetIcon = new ImageIcon(cl.getResource("simulator/images/planet.png"));
+				private Icon asteroidIcon = new ImageIcon(cl.getResource(
+						"simulator/images/asteroid.png"));
+				private Icon moonIcon = new ImageIcon(cl.getResource("simulator/images/moon.png"));
+				private Icon craftIcon = new ImageIcon(cl.getResource("simulator/images/craft.png"));
 
 				@Override
 				public Component getTreeCellRendererComponent(JTree tree,

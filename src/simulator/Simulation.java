@@ -19,8 +19,8 @@ public class Simulation {
 	private Timer timer;
 		
 	public void init() {
-		bodies = loader.getBodies("res/elements.csv");
-		ships = loader.getShips("res/craft.csv");
+		bodies = loader.getBodies("/data/solarSystem.csv");
+		ships = loader.getShips("/data/craft.csv");
 		window = new Window(Defines.width, Defines.height, bodies, ships);
 		window.init();
 		timer = new Timer(window);

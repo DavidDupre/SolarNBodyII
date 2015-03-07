@@ -1,9 +1,15 @@
 package simulator;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +44,10 @@ public class CSVLoader {
 
 		int n = 0;
 		try {
-			brBodies = new BufferedReader(new FileReader(filePath));
+			File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+	        String rootPath = jarPath.getParent();
+			InputStream is = new FileInputStream(rootPath + filePath);
+	        brBodies = new BufferedReader(new InputStreamReader(is));
 			while (((line = brBodies.readLine()) != null)) {
 				String[] column = line.split(cvsSplitBy);
 				if (n > 0) { // skip header row
@@ -71,7 +80,10 @@ public class CSVLoader {
 
 		int n = 0;
 		try {
-			brShips = new BufferedReader(new FileReader(filePath));
+			File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+	        String rootPath = jarPath.getParent();
+			InputStream is = new FileInputStream(rootPath + filePath);
+			brShips = new BufferedReader(new InputStreamReader(is));
 			while (((line = brShips.readLine()) != null)) {
 				String[] column = line.split(cvsSplitBy);
 				if (n > 0) { // skip header row
