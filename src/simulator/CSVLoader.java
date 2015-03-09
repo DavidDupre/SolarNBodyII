@@ -25,8 +25,8 @@ import simulator.utils.Vector3D;
 
 public class CSVLoader {
 
-	// creates a list of bodies from a csv file. All items in the list inherit
-	// from body
+	// creates a list of bodies from a csv file.
+	// TODO less copy-paste
 
 	public ArrayList<SimObject> bodies;
 	public ArrayList<SimObject> ships;
@@ -44,9 +44,7 @@ public class CSVLoader {
 
 		int n = 0;
 		try {
-			File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-	        String rootPath = jarPath.getParent();
-			InputStream is = new FileInputStream(rootPath + filePath);
+			InputStream is = new FileInputStream(filePath);
 	        brBodies = new BufferedReader(new InputStreamReader(is));
 			while (((line = brBodies.readLine()) != null)) {
 				String[] column = line.split(cvsSplitBy);
@@ -80,9 +78,7 @@ public class CSVLoader {
 
 		int n = 0;
 		try {
-			File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-	        String rootPath = jarPath.getParent();
-			InputStream is = new FileInputStream(rootPath + filePath);
+			InputStream is = new FileInputStream(filePath);
 			brShips = new BufferedReader(new InputStreamReader(is));
 			while (((line = brShips.readLine()) != null)) {
 				String[] column = line.split(cvsSplitBy);

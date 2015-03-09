@@ -13,7 +13,7 @@ public class Defines {
 	public static final int FOCUS_BODY = 3;
 	
 	//In seconds per physics tick
-	public static final int SECONDS_PER_TICK = 1;
+	public static final double SECONDS_PER_TICK = 1.0;
 	public static final int TIMESTEP = (int) (SECONDS_PER_TICK / Math.sqrt(Astrophysics.G)); //TODO make this less static
 	
 	public enum BodyType {

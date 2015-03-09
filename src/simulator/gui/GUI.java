@@ -48,7 +48,7 @@ public class GUI {
 	private int windowWidth, windowHeight;
 	private List<SimObject> bodies;
 	private List<SimObject> ships;
-	private int requestedSpeed = Defines.SECONDS_PER_TICK;
+	private double requestedSpeed = Defines.SECONDS_PER_TICK;
 	private JLabel simSpeedLabel;
 
 	public GUI(int width, int height, List<SimObject> bodies,
@@ -83,19 +83,16 @@ public class GUI {
 		
 		//Speed settings panel
 		JPanel speedPanel = new JPanel(new GridLayout(1, 0));
+		final String slowerString = "<";
 		final String pauseString = "||";
-		final String slowSpeedString = ">";
-		final String mediumSpeedString = ">>";
-		final String fastSpeedString = ">>>";
-		JRadioButton pauseButton = new JRadioButton(pauseString);
-		JRadioButton slowSpeedButton = new JRadioButton(slowSpeedString);
-		JRadioButton mediumSpeedButton = new JRadioButton(mediumSpeedString);
-		JRadioButton fastSpeedButton = new JRadioButton(fastSpeedString);
+		final String fasterString = ">";
+		JButton slowerButton = new JButton(slowerString);
+		JButton pauseButton = new JButton(pauseString);
+		JButton fasterButton = new JButton(fasterString);
 		ButtonGroup speedButtonGroup = new ButtonGroup();
+		speedButtonGroup.add(slowerButton);
 		speedButtonGroup.add(pauseButton);
-		speedButtonGroup.add(slowSpeedButton);
-		speedButtonGroup.add(mediumSpeedButton);
-		speedButtonGroup.add(fastSpeedButton);
+		speedButtonGroup.add(fasterButton);
 		ActionListener speedListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -103,14 +100,11 @@ public class GUI {
 				case pauseString:
 					requestedSpeed = 0;
 					break;
-				case slowSpeedString:
-					requestedSpeed = 1;
+				case fasterString:
+					requestedSpeed *= 10;
 					break;
-				case mediumSpeedString:
-					requestedSpeed = 10;
-					break;
-				case fastSpeedString:
-					requestedSpeed = 100;
+				case slowerString:
+					requestedSpeed *= .1;
 					break;
 				default:
 					requestedSpeed = Defines.SECONDS_PER_TICK;
@@ -318,7 +312,7 @@ public class GUI {
 		return objectPane.getFocusRequest();
 	}
 	
-	public int getSpeedRequest() {
+	public double getSpeedRequest() {
 		return requestedSpeed;
 	}
 

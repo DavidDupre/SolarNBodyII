@@ -18,9 +18,10 @@ public class Simulation {
 	public static ReentrantLock physicsLock;
 	private Timer timer;
 		
-	public void init() {
-		bodies = loader.getBodies("/data/solarSystem.csv");
-		ships = loader.getShips("/data/craft.csv");
+	public void init(String bodyFilePath) {
+		//bodies = loader.getBodies("./data/solarSystem.csv");
+		bodies = loader.getBodies(bodyFilePath);
+		ships = loader.getShips("./resources/craft.csv");
 		window = new Window(Defines.width, Defines.height, bodies, ships);
 		window.init();
 		timer = new Timer(window);

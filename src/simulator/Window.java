@@ -139,7 +139,7 @@ public class Window {
 		GL11.glTranslated(-pos.x, -pos.y, -pos.z);
 	}
 
-	public int getSpeedRequest() {
+	public double getSpeedRequest() {
 		return gui.getSpeedRequest();
 	}
 
