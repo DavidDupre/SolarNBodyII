@@ -178,7 +178,7 @@ public class CSVLoader {
 		}
 
 		Craft newCraft = new Craft(ships.size(), name, parent, state,
-				new CraftPhysics(), new CraftRender(Defines.BodyType.CRAFT));
+				new CraftPhysics(), new CraftRender(Defines.BodyType.SHIP));
 		ships.add(newCraft);
 	}
 }

@@ -14,6 +14,7 @@ public abstract class SimObject {
 	protected Vector3D pos;
 	protected Vector3D vel;
 	protected int id;
+	protected HashMap<String, Double> orbit;
 	
 	public SimObject(int id, PhysicsComponent physics, RenderComponent render) {
 		this.id = id;
@@ -23,6 +24,14 @@ public abstract class SimObject {
 	}
 	
 	public abstract void update();
+	
+	public HashMap<String, Double> getOrbit() {
+		return orbit;
+	}
+	
+	public void setOrbit(HashMap<String, Double> orb) {
+		this.orbit = orb;
+	}
 	
 	public void setDrawConic(boolean b) {
 		((RenderComponent) components.get(Defines.RENDER)).setDrawConic(b);

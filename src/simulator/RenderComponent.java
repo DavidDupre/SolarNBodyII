@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.lwjgl.opengl.GL11;
 
+import simulator.body.Body;
 import simulator.utils.Astrophysics;
 import simulator.utils.Conic;
 import simulator.utils.Vector3D;
@@ -17,6 +18,17 @@ public abstract class RenderComponent extends Component {
 		Vector3D r = simObject.getRelativePos();
 		Vector3D v = simObject.getRelativeVel();
 		HashMap<String, Double> orb = Astrophysics.toOrbitalElements(r, v, simObject.getParent());
+		if(orb.get("e") > 1) {
+			if(simObject.getParent() != null){
+				if(simObject.getParent().getParent() != null) {
+					Body newParent = simObject.getParent().getParent();
+					simObject.setParent(newParent);
+					System.out.println(simObject.getName() + " escaped to " + newParent.getName());
+				} else {
+					// escaped solar system
+				}
+			}
+		}
 		double anomaly = orb.get("v"); //get the current true anomaly so the ellipse passes through the body and looks good
 		Conic conic = new Conic(orb);
 		GL11.glBegin(GL11.GL_LINE_STRIP);

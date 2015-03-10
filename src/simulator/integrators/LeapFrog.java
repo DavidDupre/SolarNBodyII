@@ -2,6 +2,8 @@ package simulator.integrators;
 
 import java.util.List;
 
+import org.lwjgl.Sys;
+
 import simulator.SimObject;
 import simulator.Simulation;
 import simulator.body.Body;
@@ -15,7 +17,10 @@ public class LeapFrog extends Integrator {
 	private Vector3D[] aCraft;
 	private Thread thread;
 	private long elapsedTicks = 0;
-	
+	private double elapsedTime = 0;
+	private static final boolean IS_DYNAMIC = true;
+	private static final double MAX_TIMESTEP = 1E7;
+
 	public LeapFrog(List<SimObject> bList, List<SimObject> cList) {
 		this.bodies = bList;
 		a = new Vector3D[bodies.size()];
@@ -26,11 +31,11 @@ public class LeapFrog extends Integrator {
 		}
 		this.ships = cList;
 		aCraft = new Vector3D[ships.size()];
-		for (int i = 0; i < ships.size(); i++) { 
+		for (int i = 0; i < ships.size(); i++) {
 			aCraft[i] = getAccelerationForCraft((Craft) ships.get(i));
 		}
 	}
-	
+
 	private double getSimpleMass(Body body1, Body body2) {
 		double mass = 0;
 		Body ancestor = body1.getParent();
@@ -70,14 +75,15 @@ public class LeapFrog extends Integrator {
 				break;
 			}
 
-			Vector3D diff = body2.getPos().clone().subtract(body1.getPos().clone());
+			Vector3D diff = body2.getPos().clone()
+					.subtract(body1.getPos().clone());
 			double mag = diff.magnitude();
 			Vector3D a = diff.multiply(mass / Math.pow(mag, 3));
 			aTotal.add(a);
 		}
 		return aTotal;
 	}
-	
+
 	private Vector3D getAccelerationForCraft(Craft craft) {
 		// Uses mass of all bodies
 		Vector3D aTotal = new Vector3D();
@@ -93,9 +99,9 @@ public class LeapFrog extends Integrator {
 			Vector3D a = diff.multiply(body.getMass() / Math.pow(mag, 3));
 			aTotal.add(a);
 		}
-		return aTotal; //.multiply(Astrophysics.G);
+		return aTotal; // .multiply(Astrophysics.G);
 	}
-	
+
 	private void simulate(double t) {
 		Simulation.physicsLock.lock();
 		// Do physics for bodies
@@ -106,7 +112,7 @@ public class LeapFrog extends Integrator {
 			a[k] = getAcceleration(b);
 			b.setVel(vHalf.add(a[k].clone().multiply(t / 2.0)));
 		}
-		
+
 		// Do physics for craft
 		for (int i = 0; i < ships.size(); i++) {
 			Craft c = (Craft) ships.get(i);
@@ -117,14 +123,21 @@ public class LeapFrog extends Integrator {
 		}
 		Simulation.physicsLock.unlock();
 	}
-	
+
 	public void run() {
-		while(true) {
-			simulate(timeStep);
+		while (true) {
+			elapsedTime = getRealElapsedTime();
+			double realTimeStep = timeStep*elapsedTime;
+			realTimeStep = realTimeStep > MAX_TIMESTEP ? MAX_TIMESTEP : realTimeStep;
+			elapsedTime = realTimeStep;
+			if(realTimeStep != 0) {
+				//System.out.println(realTimeStep);
+				simulate(realTimeStep);
+			}
 			elapsedTicks += 1;
 		}
 	}
-	
+
 	public void start() {
 		if (thread == null) {
 			thread = new Thread(this);
@@ -133,10 +146,27 @@ public class LeapFrog extends Integrator {
 		}
 	}
 
+	private static long getTime() {
+		return (Sys.getTime()*1000) / Sys.getTimerResolution();
+	}
+
+	private static long lastFrame = getTime();
+	
+	private double getRealElapsedTime() {
+		if (IS_DYNAMIC) {
+			long time = getTime();
+			long delta = (time - lastFrame);
+			lastFrame = time;
+			return delta;
+		} else {
+			long elapsedTime = elapsedTicks * timeStep;
+			elapsedTicks = 0;
+			return elapsedTime;
+		}
+	}
+
 	@Override
 	public double getElapsedTime() {
-		double elapsedTime = elapsedTicks * timeStep;
-		elapsedTicks = 0;
 		return elapsedTime;
 	}
 }

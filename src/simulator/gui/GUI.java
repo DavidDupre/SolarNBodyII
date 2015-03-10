@@ -201,7 +201,7 @@ public class GUI {
 						case MOON:
 							setIcon(moonIcon);
 							break;
-						case CRAFT:
+						case SHIP:
 							setIcon(craftIcon);
 							break;
 						default:

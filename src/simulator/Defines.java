@@ -17,7 +17,7 @@ public class Defines {
 	public static final int TIMESTEP = (int) (SECONDS_PER_TICK / Math.sqrt(Astrophysics.G)); //TODO make this less static
 	
 	public enum BodyType {
-		STAR, PLANET, DWARF_PLANET, MOON, ASTEROID, CRAFT
+		STAR, PLANET, DWARF_PLANET, MOON, ASTEROID, SHIP
 	}
 	
 	public static HashMap<BodyType, float[]> colors;
