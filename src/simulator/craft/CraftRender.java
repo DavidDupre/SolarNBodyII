@@ -23,7 +23,7 @@ public class CraftRender extends RenderComponent {
 		GL11.glColor3f(1f, 1f, 1f);
 		
 		if (drawConic && (craft.getParent() != null)) {
-			drawConic(craft);
+			drawConic();
 		}
 
 		GL11.glBegin(GL11.GL_POINTS);

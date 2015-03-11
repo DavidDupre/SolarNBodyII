@@ -28,7 +28,7 @@ public class BodyRender extends RenderComponent {
 		image.draw((float) (body.getRadius()), 16, 16);
 		
 		if (drawConic && (body.getParent() != null)) {
-			drawConic(body);
+			drawConic();
 		}
 
 		GL11.glBegin(GL11.GL_POINTS);

@@ -1,6 +1,7 @@
 package simulator.gui;
 
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -13,9 +14,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -25,7 +28,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -40,7 +42,7 @@ import org.lwjgl.opengl.Display;
 import simulator.Defines;
 import simulator.SimObject;
 import simulator.body.Body;
-import simulator.craft.Craft;
+import simulator.utils.Astrophysics;
 
 public class GUI {
 	private ObjectTree objectPane;
@@ -49,15 +51,18 @@ public class GUI {
 	private List<SimObject> bodies;
 	private List<SimObject> ships;
 	private double requestedSpeed = Defines.SECONDS_PER_TICK;
+	private SimObject selectedBody;
 	private JLabel simSpeedLabel;
+	private InfoPanel infoPanel;
 
 	public GUI(int width, int height, List<SimObject> bodies,
 			List<SimObject> ships) {
 		this.width = width;
 		this.height = height;
-		windowWidth = (int) (((float) width) * .8f);
-		windowHeight = (int) (((float) height) * .8f);
+		windowWidth = (int) (((float) width) * .5f);
+		windowHeight = (int) (((float) height) * .66667f);
 		this.bodies = bodies;
+		selectedBody = bodies.get(Defines.FOCUS_BODY);
 		this.ships = ships;
 		Canvas canvas = new Canvas();
 
@@ -80,8 +85,8 @@ public class GUI {
 		rootFrame.setTitle("Solar N-Body");
 
 		objectPane = new ObjectTree();
-		
-		//Speed settings panel
+
+		// Speed settings panel
 		JPanel speedPanel = new JPanel(new GridLayout(1, 0));
 		final String slowerString = "<";
 		final String pauseString = "||";
@@ -96,7 +101,7 @@ public class GUI {
 		ActionListener speedListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				switch(e.getActionCommand()) {
+				switch (e.getActionCommand()) {
 				case pauseString:
 					requestedSpeed = 0;
 					break;
@@ -112,18 +117,22 @@ public class GUI {
 				}
 			}
 		};
-		for(Enumeration<AbstractButton> buttons = speedButtonGroup.getElements(); buttons.hasMoreElements();) {
+		for (Enumeration<AbstractButton> buttons = speedButtonGroup
+				.getElements(); buttons.hasMoreElements();) {
 			AbstractButton button = buttons.nextElement();
 			button.addActionListener(speedListener);
 			speedPanel.add(button);
 		}
-		
-		//Speed notifications
+
+		// Speed notifications
 		JPanel simSpeedPanel = new JPanel();
 		simSpeedLabel = new JLabel("Simulation speed: 0x");
 		simSpeedPanel.add(simSpeedLabel);
 
-		//Place components onto root frame
+		// Info panel
+		infoPanel = new InfoPanel();
+
+		// Place components onto root frame
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 1;
 		gbc.gridy = 0;
@@ -131,14 +140,18 @@ public class GUI {
 
 		gbc.gridx = 0;
 		rootPanel.add(objectPane, gbc);
-		
+
 		gbc.gridx = 1;
 		gbc.gridy = 1;
 		rootPanel.add(speedPanel, gbc);
-		
+
 		gbc.gridx = 1;
 		gbc.gridy = 2;
 		rootPanel.add(simSpeedPanel, gbc);
+
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		rootPanel.add(infoPanel, gbc);
 
 		try {
 			Display.setParent(canvas);
@@ -150,10 +163,112 @@ public class GUI {
 	}
 
 	@SuppressWarnings("serial")
+	private class InfoPanel extends JPanel {
+		//TODO move it up
+		private GridBagConstraints gbc;
+		private int row = 0;
+		private SimObject lastBody;
+		private SimObject thisBody;
+		private JScrollPane scrollPanel;
+		private JPanel tablePanel;
+
+		public InfoPanel() {
+			tablePanel = new JPanel();
+			tablePanel.setLayout(new GridBagLayout());
+			gbc = new GridBagConstraints();
+			
+			lastBody = selectedBody;
+			thisBody = selectedBody;
+			setBody(thisBody);
+			UpdateThread thread = new UpdateThread();
+			thread.start();
+			
+			scrollPanel = new JScrollPane(tablePanel);
+			scrollPanel.setBounds(0, 0, 200, windowHeight);
+			scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	        scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			//tablePanel.setAutoscrolls(true);
+	        JPanel rootPanel = new JPanel(null);
+			rootPanel.setPreferredSize(new Dimension(200, windowHeight));
+			rootPanel.add(scrollPanel);
+			this.add(rootPanel);
+		}
+
+		private void addNewValue(String key, String value) {
+			gbc.gridy = row;
+			gbc.fill=GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 5;
+			JLabel keyLabel = new JLabel(key);
+			keyLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			gbc.gridx = 0;
+			tablePanel.add(keyLabel, gbc);
+			JLabel valueLabel = new JLabel(value);
+			valueLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			gbc.gridx = 1;
+			tablePanel.add(valueLabel, gbc);
+			row++;
+		}
+		
+		private void addNewValue(String key, Double d) {
+			if(d < 360 && d > 0.001) {
+				addNewValue(key, String.format("%.5g%n", d));
+			} else {
+				addNewValue(key, String.format("%6.3e", d));
+			}
+		}
+
+		public void setBody(SimObject so) {
+			lastBody.setIsDisplayingInfo(false);
+			lastBody = thisBody;
+			thisBody = so;
+			thisBody.setIsDisplayingInfo(true);
+		}
+
+		private void update() {
+			row = 0;
+			tablePanel.removeAll();
+			addNewValue("Name", thisBody.getName());
+			if(thisBody.getParent() != null){
+				HashMap<String, Double> orbit = thisBody.getOrbit();
+				if (orbit != null) {
+					addNewValue("Anomaly", Math.toDegrees(orbit.get("v")));
+					addNewValue("Eccentricity", orbit.get("e"));
+					addNewValue("Inclination", Math.toDegrees(orbit.get("i")));
+					addNewValue("Semi-major (m)", orbit.get("a")*Astrophysics.G);
+					addNewValue("Periapsis (m)", thisBody.getPeriapsis()*Astrophysics.G);
+					addNewValue("Apoapsis (m)", thisBody.getApoapsis()*Astrophysics.G);
+				}
+				if(thisBody.getType() == Defines.BodyType.SHIP){
+					addNewValue("Altitude (m)", thisBody.getAltitude()*Astrophysics.G);
+				} else {
+					addNewValue("Mass (kg)", ((Body) thisBody).getMass()*Astrophysics.G);
+				}
+			} else {
+				addNewValue("Mass (kg)", ((Body) thisBody).getMass()*Astrophysics.G);
+			}
+			tablePanel.revalidate();
+			tablePanel.repaint();
+		}
+
+		private class UpdateThread extends Thread {
+			public void run() {
+				while (true) { // TODO make this less shitty
+					update();
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("serial")
 	private class ObjectTree extends JPanel {
 		private JTree tree;
 		private DefaultMutableTreeNode root;
-		private SimObject requestedObject = bodies.get(Defines.FOCUS_BODY);
+		private SimObject requestedObject = selectedBody;
 		private List<DefaultMutableTreeNode> nodes;
 		private ClassLoader cl;
 
@@ -169,12 +284,16 @@ public class GUI {
 
 			// Renderer for custom icons
 			tree.setCellRenderer(new DefaultTreeCellRenderer() {
-				private Icon starIcon = new ImageIcon(cl.getResource("simulator/images/star.png"));
-				private Icon planetIcon = new ImageIcon(cl.getResource("simulator/images/planet.png"));
-				private Icon asteroidIcon = new ImageIcon(cl.getResource(
-						"simulator/images/asteroid.png"));
-				private Icon moonIcon = new ImageIcon(cl.getResource("simulator/images/moon.png"));
-				private Icon craftIcon = new ImageIcon(cl.getResource("simulator/images/craft.png"));
+				private Icon starIcon = new ImageIcon(cl
+						.getResource("simulator/images/star.png"));
+				private Icon planetIcon = new ImageIcon(cl
+						.getResource("simulator/images/planet.png"));
+				private Icon asteroidIcon = new ImageIcon(cl
+						.getResource("simulator/images/asteroid.png"));
+				private Icon moonIcon = new ImageIcon(cl
+						.getResource("simulator/images/moon.png"));
+				private Icon craftIcon = new ImageIcon(cl
+						.getResource("simulator/images/craft.png"));
 
 				@Override
 				public Component getTreeCellRendererComponent(JTree tree,
@@ -221,8 +340,11 @@ public class GUI {
 							DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
 									.getLastSelectedPathComponent();
 							if (selectedNode != null) {
+								selectedBody.setIsDisplayingInfo(false);
 								requestedObject = ((SimObject) selectedNode
 										.getUserObject());
+								selectedBody = requestedObject;
+								infoPanel.setBody(selectedBody);
 							}
 						}
 					});
@@ -284,13 +406,15 @@ public class GUI {
 		}
 	}
 
-	//TODO this could be optimized so we don't have to make new menus and listeners every time
+	// TODO this could be optimized so we don't have to make new menus and
+	// listeners every time
 	@SuppressWarnings("serial")
 	private class SimPopupMenu extends JPopupMenu {
 		public SimPopupMenu(final SimObject simObject) {
 			final boolean state = simObject.getDrawConic();
-			JCheckBoxMenuItem conicItem = new JCheckBoxMenuItem("Draw conic", state);
-			conicItem.addActionListener(new ActionListener(){
+			JCheckBoxMenuItem conicItem = new JCheckBoxMenuItem("Draw conic",
+					state);
+			conicItem.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					simObject.setDrawConic(!state);
@@ -311,7 +435,7 @@ public class GUI {
 	public SimObject getFocusRequest() {
 		return objectPane.getFocusRequest();
 	}
-	
+
 	public double getSpeedRequest() {
 		return requestedSpeed;
 	}

@@ -13,41 +13,30 @@ public abstract class RenderComponent extends Component {
 	protected boolean drawConic;
 	protected float[] color;
 	protected Defines.BodyType type;
-	
-	protected void drawConic(SimObject simObject) {
-		Vector3D r = simObject.getRelativePos();
-		Vector3D v = simObject.getRelativeVel();
-		HashMap<String, Double> orb = Astrophysics.toOrbitalElements(r, v, simObject.getParent());
-		if(orb.get("e") > 1) {
-			if(simObject.getParent() != null){
-				if(simObject.getParent().getParent() != null) {
-					Body newParent = simObject.getParent().getParent();
-					simObject.setParent(newParent);
-					System.out.println(simObject.getName() + " escaped to " + newParent.getName());
-				} else {
-					// escaped solar system
-				}
-			}
-		}
-		double anomaly = orb.get("v"); //get the current true anomaly so the ellipse passes through the body and looks good
+
+	protected void drawConic() {
+		HashMap<String, Double> orb = simObject.getOrbit();
+		double anomaly = orb.get("v"); // get the current true anomaly so the
+		// ellipse passes through the body and
+		// looks good
 		Conic conic = new Conic(orb);
 		GL11.glBegin(GL11.GL_LINE_STRIP);
-		for (int i=0; i < 100; i++){
-			Vector3D pos = conic.getPosition(i*Math.PI/49 + anomaly);
-			pos.subtract(r);
+		for (int i = 0; i < 100; i++) {
+			Vector3D pos = conic.getPosition(i * Math.PI / 49 + anomaly);
+			pos.subtract(simObject.getRelativePos());
 			GL11.glVertex3d(pos.x, pos.y, pos.z);
 		}
 		GL11.glEnd();
 	}
-	
+
 	public void setDrawConic(boolean b) {
 		drawConic = b;
 	}
-	
+
 	public boolean getDrawConic() {
 		return drawConic;
 	}
-	
+
 	public Defines.BodyType getType() {
 		return type;
 	}

@@ -2,6 +2,7 @@ package simulator;
 
 import simulator.Component;
 import simulator.body.Body;
+import simulator.utils.Astrophysics;
 import simulator.utils.Vector3D;
 
 import java.util.HashMap;
@@ -15,6 +16,7 @@ public abstract class SimObject {
 	protected Vector3D vel;
 	protected int id;
 	protected HashMap<String, Double> orbit;
+	protected boolean isDisplayingInfo = false;
 	
 	public SimObject(int id, PhysicsComponent physics, RenderComponent render) {
 		this.id = id;
@@ -24,6 +26,14 @@ public abstract class SimObject {
 	}
 	
 	public abstract void update();
+	
+	public void setIsDisplayingInfo(boolean b) {
+		isDisplayingInfo = b;
+	}
+	
+	public boolean isDisplayingInfo() {
+		return isDisplayingInfo;
+	}
 	
 	public HashMap<String, Double> getOrbit() {
 		return orbit;
@@ -99,5 +109,29 @@ public abstract class SimObject {
 	
 	public void setVel(Vector3D vel) {
 		this.vel = vel;
+	}
+	
+	public double getAltitude() {
+		if(parent != null){
+			return getRelativePos().magnitude()-getParent().getRadius();
+		} else {
+			return -1;
+		}
+	}
+	
+	public double getApoapsis() {
+		if(parent != null) {
+			return (1+orbit.get("e"))*(orbit.get("a")) - parent.getRadius();
+		} else {
+			return -1;
+		}
+	}
+	
+	public double getPeriapsis() {
+		if(parent != null) {
+			return (1-orbit.get("e"))*(orbit.get("a")) - parent.getRadius();
+		} else {
+			return -1;
+		}
 	}
 }

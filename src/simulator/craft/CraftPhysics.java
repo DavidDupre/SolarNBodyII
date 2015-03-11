@@ -3,11 +3,17 @@ package simulator.craft;
 import simulator.PhysicsComponent;
 
 public class CraftPhysics extends PhysicsComponent {
+	private Craft ship;
+	
+	public CraftPhysics() {
+		ship = (Craft) simObject;
+	}
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
-		
+		if(simObject.isDisplayingInfo() || simObject.getDrawConic()){
+			calculateOrbit();
+		}
 	}
 
 	@Override
