@@ -35,6 +35,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.lwjgl.opengl.Display;
@@ -106,10 +107,10 @@ public class GUI {
 					requestedSpeed = 0;
 					break;
 				case fasterString:
-					requestedSpeed *= 10;
+					requestedSpeed *= 2;
 					break;
 				case slowerString:
-					requestedSpeed *= .1;
+					requestedSpeed *= .5;
 					break;
 				default:
 					requestedSpeed = Defines.SECONDS_PER_TICK;
@@ -160,11 +161,31 @@ public class GUI {
 		}
 
 		rootPanel.revalidate();
+
+		UpdateThread thread = new UpdateThread();
+		thread.start();
+	}
+
+	private class UpdateThread extends Thread {
+		public UpdateThread() {
+			this.setName("GUI");
+		}
+		public void run() {
+			while (true) { // TODO make this less shitty
+				infoPanel.update();
+				objectPane.update();
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	@SuppressWarnings("serial")
 	private class InfoPanel extends JPanel {
-		//TODO move it up
+		// TODO move it up
 		private GridBagConstraints gbc;
 		private int row = 0;
 		private SimObject lastBody;
@@ -176,19 +197,19 @@ public class GUI {
 			tablePanel = new JPanel();
 			tablePanel.setLayout(new GridBagLayout());
 			gbc = new GridBagConstraints();
-			
+
 			lastBody = selectedBody;
 			thisBody = selectedBody;
 			setBody(thisBody);
-			UpdateThread thread = new UpdateThread();
-			thread.start();
-			
+
 			scrollPanel = new JScrollPane(tablePanel);
 			scrollPanel.setBounds(0, 0, 200, windowHeight);
-			scrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	        scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			//tablePanel.setAutoscrolls(true);
-	        JPanel rootPanel = new JPanel(null);
+			scrollPanel
+					.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			scrollPanel
+					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			// tablePanel.setAutoscrolls(true);
+			JPanel rootPanel = new JPanel(null);
 			rootPanel.setPreferredSize(new Dimension(200, windowHeight));
 			rootPanel.add(scrollPanel);
 			this.add(rootPanel);
@@ -196,7 +217,7 @@ public class GUI {
 
 		private void addNewValue(String key, String value) {
 			gbc.gridy = row;
-			gbc.fill=GridBagConstraints.HORIZONTAL;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.weightx = 5;
 			JLabel keyLabel = new JLabel(key);
 			keyLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -208,9 +229,9 @@ public class GUI {
 			tablePanel.add(valueLabel, gbc);
 			row++;
 		}
-		
+
 		private void addNewValue(String key, Double d) {
-			if(d < 360 && d > 0.001) {
+			if (d < 360 && d > 0.001) {
 				addNewValue(key, String.format("%.5g%n", d));
 			} else {
 				addNewValue(key, String.format("%6.3e", d));
@@ -228,39 +249,32 @@ public class GUI {
 			row = 0;
 			tablePanel.removeAll();
 			addNewValue("Name", thisBody.getName());
-			if(thisBody.getParent() != null){
+			if (thisBody.getParent() != null) {
 				HashMap<String, Double> orbit = thisBody.getOrbit();
 				if (orbit != null) {
 					addNewValue("Anomaly", Math.toDegrees(orbit.get("v")));
 					addNewValue("Eccentricity", orbit.get("e"));
 					addNewValue("Inclination", Math.toDegrees(orbit.get("i")));
-					addNewValue("Semi-major (m)", orbit.get("a")*Astrophysics.G);
-					addNewValue("Periapsis (m)", thisBody.getPeriapsis()*Astrophysics.G);
-					addNewValue("Apoapsis (m)", thisBody.getApoapsis()*Astrophysics.G);
+					addNewValue("Semi-major (m)", orbit.get("a")
+							* Astrophysics.G);
+					addNewValue("Periapsis (m)", thisBody.getPeriapsis()
+							* Astrophysics.G);
+					addNewValue("Apoapsis (m)", thisBody.getApoapsis()
+							* Astrophysics.G);
 				}
-				if(thisBody.getType() == Defines.BodyType.SHIP){
-					addNewValue("Altitude (m)", thisBody.getAltitude()*Astrophysics.G);
+				if (thisBody.getType() == Defines.BodyType.SHIP) {
+					addNewValue("Altitude (m)", thisBody.getAltitude()
+							* Astrophysics.G);
 				} else {
-					addNewValue("Mass (kg)", ((Body) thisBody).getMass()*Astrophysics.G);
+					addNewValue("Mass (kg)", ((Body) thisBody).getMass()
+							* Astrophysics.G);
 				}
 			} else {
-				addNewValue("Mass (kg)", ((Body) thisBody).getMass()*Astrophysics.G);
+				addNewValue("Mass (kg)", ((Body) thisBody).getMass()
+						* Astrophysics.G);
 			}
 			tablePanel.revalidate();
 			tablePanel.repaint();
-		}
-
-		private class UpdateThread extends Thread {
-			public void run() {
-				while (true) { // TODO make this less shitty
-					update();
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-			}
 		}
 	}
 
@@ -271,6 +285,10 @@ public class GUI {
 		private SimObject requestedObject = selectedBody;
 		private List<DefaultMutableTreeNode> nodes;
 		private ClassLoader cl;
+		private DefaultTreeCellRenderer render;
+		private TreeSelectionListener selectListener;
+		private MouseAdapter mouseListener;
+		private DefaultTreeModel model;
 
 		public ObjectTree() {
 			// create the root note
@@ -278,22 +296,23 @@ public class GUI {
 			root = new DefaultMutableTreeNode("System");
 			// create the tree by passing in the root node
 			tree = new JTree(root);
+			model = (DefaultTreeModel) tree.getModel();
 			JScrollPane scroll = new JScrollPane(tree);
 			scroll.setPreferredSize(new Dimension(200, getWindowHeight()));
 			add(scroll);
 
 			// Renderer for custom icons
-			tree.setCellRenderer(new DefaultTreeCellRenderer() {
-				private Icon starIcon = new ImageIcon(cl
-						.getResource("simulator/images/star.png"));
-				private Icon planetIcon = new ImageIcon(cl
-						.getResource("simulator/images/planet.png"));
-				private Icon asteroidIcon = new ImageIcon(cl
-						.getResource("simulator/images/asteroid.png"));
-				private Icon moonIcon = new ImageIcon(cl
-						.getResource("simulator/images/moon.png"));
-				private Icon craftIcon = new ImageIcon(cl
-						.getResource("simulator/images/craft.png"));
+			render = new DefaultTreeCellRenderer() {
+				private Icon starIcon = new ImageIcon(
+						cl.getResource("simulator/images/star.png"));
+				private Icon planetIcon = new ImageIcon(
+						cl.getResource("simulator/images/planet.png"));
+				private Icon asteroidIcon = new ImageIcon(
+						cl.getResource("simulator/images/asteroid.png"));
+				private Icon moonIcon = new ImageIcon(
+						cl.getResource("simulator/images/moon.png"));
+				private Icon craftIcon = new ImageIcon(
+						cl.getResource("simulator/images/craft.png"));
 
 				@Override
 				public Component getTreeCellRendererComponent(JTree tree,
@@ -330,27 +349,26 @@ public class GUI {
 					}
 					return c;
 				}
-			});
+			};
 
 			// Selection listener
-			tree.getSelectionModel().addTreeSelectionListener(
-					new TreeSelectionListener() {
-						@Override
-						public void valueChanged(TreeSelectionEvent e) {
-							DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
-									.getLastSelectedPathComponent();
-							if (selectedNode != null) {
-								selectedBody.setIsDisplayingInfo(false);
-								requestedObject = ((SimObject) selectedNode
-										.getUserObject());
-								selectedBody = requestedObject;
-								infoPanel.setBody(selectedBody);
-							}
-						}
-					});
+			selectListener = new TreeSelectionListener() {
+				@Override
+				public void valueChanged(TreeSelectionEvent e) {
+					DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree
+							.getLastSelectedPathComponent();
+					if (selectedNode != null) {
+						selectedBody.setIsDisplayingInfo(false);
+						requestedObject = ((SimObject) selectedNode
+								.getUserObject());
+						selectedBody = requestedObject;
+						infoPanel.setBody(selectedBody);
+					}
+				}
+			};
 
 			// Mouse listener
-			tree.addMouseListener(new MouseAdapter() {
+			mouseListener = new MouseAdapter() {
 				public void mousePressed(MouseEvent e) {
 					if (SwingUtilities.isRightMouseButton(e)) {
 						TreePath path = tree.getPathForLocation(e.getX(),
@@ -367,8 +385,24 @@ public class GUI {
 						}
 					}
 				}
-			});
+			};
+			
+			initTree();
+			populate();
 
+			// Hide root node
+			tree.expandRow(0);
+			tree.setShowsRootHandles(true);
+			tree.setRootVisible(false);
+		}
+		
+		private void initTree() {
+			tree.setCellRenderer(render);
+			tree.getSelectionModel().addTreeSelectionListener(selectListener);
+			tree.addMouseListener(mouseListener);
+		}
+
+		private void populate() {
 			// Populate tree
 			nodes = new ArrayList<DefaultMutableTreeNode>();
 			nodes.add(new DefaultMutableTreeNode(bodies.get(0)));
@@ -392,13 +426,27 @@ public class GUI {
 							n.add(newNode);
 						}
 					}
+					nodes.add(newNode);
 				}
 			}
+		}
 
-			// Hide root node
-			tree.expandRow(0);
-			tree.setShowsRootHandles(true);
-			tree.setRootVisible(false);
+		public void update() {
+			for(DefaultMutableTreeNode n : nodes) {
+				if(n.getParent() != null) {
+					SimObject o = (SimObject) n.getUserObject();
+					if(o.getParent() != null) {
+						DefaultMutableTreeNode nodeParent = (DefaultMutableTreeNode) n.getParent();
+						if((SimObject) nodeParent.getUserObject() != o.getParent()) {
+							DefaultMutableTreeNode newParent = (DefaultMutableTreeNode) nodeParent.getParent();
+							model.insertNodeInto(n, newParent, newParent.getChildCount());
+							model.nodeChanged(n);
+							model.reload();
+							tree.expandRow(0); 
+						}
+					}
+				}
+			}
 		}
 
 		public SimObject getFocusRequest() {
