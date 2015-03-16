@@ -14,6 +14,11 @@ public class CraftRender extends RenderComponent {
 	}
 	
 	@Override
+	public void initGL() {
+		// ayy lmao
+	}
+	
+	@Override
 	public void update() {
 		if (craft == null) {
 			craft = (Craft) simObject;

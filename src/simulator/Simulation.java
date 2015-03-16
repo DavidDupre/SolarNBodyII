@@ -24,6 +24,9 @@ public class Simulation {
 		ships = loader.getShips("./resources/craft.csv");
 		window = new Window(Defines.width, Defines.height, bodies, ships);
 		window.init();
+		for(SimObject b: bodies){ // TODO move this somewhere that has OpenGL
+			b.getRender().initGL();
+		}
 		timer = new Timer(window);
 		integrator = new LeapFrog(bodies, ships);
 		physicsLock = new ReentrantLock();

@@ -4,8 +4,6 @@ import java.util.HashMap;
 
 import org.lwjgl.opengl.GL11;
 
-import simulator.body.Body;
-import simulator.utils.Astrophysics;
 import simulator.utils.Conic;
 import simulator.utils.Vector3D;
 
@@ -14,6 +12,8 @@ public abstract class RenderComponent extends Component {
 	protected float[] color;
 	protected Defines.BodyType type;
 
+	public abstract void initGL();
+	
 	protected void drawConic() {
 		HashMap<String, Double> orb = simObject.getOrbit();
 		double anomaly = orb.get("v"); // get the current true anomaly so the

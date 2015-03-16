@@ -4,7 +4,7 @@ import java.util.HashMap;
 import simulator.body.Body;
 
 public class Astrophysics {
-	public static /*D O*/ double G = 6.67384E-11;
+	public static /*The one and only D O*/ double G = 6.67384E-11;
 	
 	public static Vector3D dVToCircularize(double r, Vector3D v, double grav) {
 		// Returns the delta-v needed to circularize an orbit given position,

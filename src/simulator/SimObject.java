@@ -1,12 +1,10 @@
 package simulator;
 
-import simulator.Component;
-import simulator.body.Body;
-import simulator.utils.Astrophysics;
-import simulator.utils.Vector3D;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import simulator.body.Body;
+import simulator.utils.Vector3D;
 
 public abstract class SimObject {
 	public Map<String, Component> components;
@@ -27,6 +25,10 @@ public abstract class SimObject {
 	
 	public abstract void update();
 	
+	public RenderComponent getRender() {
+		return (RenderComponent) components.get(Defines.RENDER);
+	}
+	
 	public void setIsDisplayingInfo(boolean b) {
 		isDisplayingInfo = b;
 	}
@@ -44,15 +46,15 @@ public abstract class SimObject {
 	}
 	
 	public void setDrawConic(boolean b) {
-		((RenderComponent) components.get(Defines.RENDER)).setDrawConic(b);
+		getRender().setDrawConic(b);
 	}
 	
 	public boolean getDrawConic() {
-		return ((RenderComponent) components.get(Defines.RENDER)).getDrawConic();
+		return getRender().getDrawConic();
 	}
 	
 	public Defines.BodyType getType() {
-		return ((RenderComponent) components.get(Defines.RENDER)).getType();
+		return getRender().getType();
 	}
 	
 	public int getID() {

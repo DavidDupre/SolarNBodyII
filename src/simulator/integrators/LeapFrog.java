@@ -8,6 +8,7 @@ import simulator.SimObject;
 import simulator.Simulation;
 import simulator.body.Body;
 import simulator.craft.Craft;
+import simulator.utils.PropertiesManager;
 import simulator.utils.Vector3D;
 
 public class LeapFrog extends Integrator {
@@ -18,10 +19,12 @@ public class LeapFrog extends Integrator {
 	private Thread thread;
 	private long elapsedTicks = 0;
 	private double elapsedTime = 0;
-	private static final boolean IS_DYNAMIC = true;
-	private static final double MAX_TIMESTEP = 1E7;
+	public boolean isDynamic = true;
+	private double maxTimestep = 5E7;
 
 	public LeapFrog(List<SimObject> bList, List<SimObject> cList) {
+		isDynamic = Boolean.parseBoolean(PropertiesManager.getProperty("dynamicTime"));
+		maxTimestep = Double.valueOf(PropertiesManager.getProperty("timestep")).longValue();
 		this.bodies = bList;
 		a = new Vector3D[bodies.size()];
 		for (int i = 0; i < bodies.size(); i++) { // Necessary to preload
@@ -128,10 +131,10 @@ public class LeapFrog extends Integrator {
 		while (true) {
 			elapsedTime = getRealElapsedTime();
 			double realTimeStep = timeStep*elapsedTime;
-			realTimeStep = realTimeStep > MAX_TIMESTEP ? MAX_TIMESTEP : realTimeStep;
+			realTimeStep = realTimeStep > maxTimestep ? maxTimestep : realTimeStep;
 			elapsedTime = realTimeStep;
+			System.out.println(); // magically improves frame rate
 			if(realTimeStep != 0) {
-				//System.out.println(realTimeStep);
 				simulate(realTimeStep);
 			}
 			elapsedTicks += 1;
@@ -153,13 +156,13 @@ public class LeapFrog extends Integrator {
 	private static long lastFrame = getTime();
 	
 	private double getRealElapsedTime() {
-		if (IS_DYNAMIC) {
+		if (isDynamic) {
 			long time = getTime();
 			long delta = (time - lastFrame);
 			lastFrame = time;
 			return delta;
 		} else {
-			long elapsedTime = elapsedTicks * timeStep;
+			long elapsedTime = elapsedTicks;
 			elapsedTicks = 0;
 			return elapsedTime;
 		}
