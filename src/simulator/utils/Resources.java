@@ -10,7 +10,8 @@ import org.newdawn.slick.util.ResourceLoader;
 public class Resources {
 	private static HashMap<String, Texture> textures = new HashMap<String, Texture>();
 	
-	public static Texture get(String path, String format) {
+	public static Texture get(String path) {
+		String format = path.substring(path.length()-3, path.length());
 		if(!textures.containsKey(path)){
 			Texture tex = null;
 			try {

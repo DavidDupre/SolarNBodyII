@@ -90,7 +90,7 @@ public class Window {
 		GL11.glLoadIdentity(); // Reset The Projection Matrix
 		
 		GL11.glFrustum(-horizontalTan, horizontalTan, aspect * horizontalTan,
-				aspect * -horizontalTan, 1, 1000000000);
+				aspect * -horizontalTan, 1.0, 1000000000.0);
 
 		GL11.glMatrixMode(GL11.GL_MODELVIEW); // Select The Modelview Matrix
 		GL11.glLoadIdentity(); // Reset The Modelview Matrix

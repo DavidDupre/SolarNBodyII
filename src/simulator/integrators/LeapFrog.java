@@ -110,7 +110,8 @@ public class LeapFrog extends Integrator {
 		// Do physics for bodies
 		for (int k = 0; k < bodies.size(); k++) {
 			Body b = (Body) bodies.get(k);
-			Vector3D vHalf = b.getVel().clone().add(a[k].multiply(t / 2d));
+			b.setRotation(b.getRotation()+(b.getPeriod()*t));
+			Vector3D vHalf = b.getVel().clone().add(a[k].multiply(t / 2.0));
 			b.getPos().add(vHalf.clone().multiply(t));
 			a[k] = getAcceleration(b);
 			b.setVel(vHalf.add(a[k].clone().multiply(t / 2.0)));
@@ -119,7 +120,7 @@ public class LeapFrog extends Integrator {
 		// Do physics for craft
 		for (int i = 0; i < ships.size(); i++) {
 			Craft c = (Craft) ships.get(i);
-			Vector3D vHalf = c.getVel().clone().add(aCraft[i].multiply(t / 2d));
+			Vector3D vHalf = c.getVel().clone().add(aCraft[i].multiply(t / 2.0));
 			c.getPos().add(vHalf.clone().multiply(t));
 			aCraft[i] = getAccelerationForCraft(c);
 			c.setVel(vHalf.add(aCraft[i].clone().multiply(t / 2.0)));
@@ -133,7 +134,7 @@ public class LeapFrog extends Integrator {
 			double realTimeStep = timeStep*elapsedTime;
 			realTimeStep = realTimeStep > maxTimestep ? maxTimestep : realTimeStep;
 			elapsedTime = realTimeStep;
-			System.out.println(); // magically improves frame rate
+			System.out.println(); // TODO magically improves frame rate
 			if(realTimeStep != 0) {
 				simulate(realTimeStep);
 			}

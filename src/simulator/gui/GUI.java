@@ -331,7 +331,7 @@ public class GUI {
 							setIcon(planetIcon);
 							break;
 						case DWARF_PLANET:
-							setIcon(planetIcon);
+							setIcon(asteroidIcon);
 							break;
 						case ASTEROID:
 							setIcon(asteroidIcon);

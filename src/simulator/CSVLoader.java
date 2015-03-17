@@ -1,15 +1,11 @@
 package simulator;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,14 +106,16 @@ public class CSVLoader {
 		Body parent = null;
 		double mass = Double.parseDouble(column[3]) / Astrophysics.G;
 		double radius = Double.parseDouble(column[4]) / Astrophysics.G;
-		double systemMass = Double.parseDouble(column[7]) / Astrophysics.G;
-		double a = Double.parseDouble(column[8]) / Astrophysics.G;
-		double e = Double.parseDouble(column[9]);
-		double i = Double.parseDouble(column[10]);
-		double node = Double.parseDouble(column[11]);
-		double peri = Double.parseDouble(column[12]);
-		double anom = Double.parseDouble(column[13]);
-		String t = column[15];
+		double systemMass = Double.parseDouble(column[5]) / Astrophysics.G;
+		double a = Double.parseDouble(column[6]) / Astrophysics.G;
+		double e = Double.parseDouble(column[7]);
+		double i = Double.parseDouble(column[8]);
+		double node = Double.parseDouble(column[9]);
+		double peri = Double.parseDouble(column[10]);
+		double anom = Double.parseDouble(column[11]);
+		float tilt = Float.parseFloat(column[12]);
+		double period = Double.parseDouble(column[13]);
+		String t = column[14];
 		BodyType type;
 		switch (t) {
 		case "Star":
@@ -153,6 +151,16 @@ public class CSVLoader {
 		Body newBody = new Body(bodies.size(), name, parent, type, mass,
 				systemMass, radius, state, new BodyPhysics(), new BodyRender(
 						type));
+		
+		if(column.length>15){
+			String texturePath = column[15];
+			texturePath = "high/" + texturePath; // TODO low and high settings
+			newBody.getRender().setTexturePath(texturePath);
+		}
+		newBody.setTilt(tilt);
+		//period /= (60.0*60.0*24.0);
+		period *= Astrophysics.G;
+		newBody.setPeriod(period);
 		bodies.add(newBody);
 	}
 

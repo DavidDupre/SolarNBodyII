@@ -1,11 +1,13 @@
 package simulator.body;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.Sphere;
 import org.newdawn.slick.opengl.Texture;
 
 import simulator.Defines;
 import simulator.RenderComponent;
+import simulator.Timer;
 import simulator.utils.Resources;
 
 public class BodyRender extends RenderComponent {
@@ -13,7 +15,8 @@ public class BodyRender extends RenderComponent {
 	private Sphere image;
 	private int imageID;
 	private Texture tex;
-	private float rotation = 0; // TODO move this
+	private boolean isTextured = false;
+	private String texturePath;
 
 	public BodyRender(Defines.BodyType t) {
 		this.type = t;
@@ -21,14 +24,13 @@ public class BodyRender extends RenderComponent {
 		body = (Body) simObject;
 
 		image = new Sphere();
-		image.setTextureFlag(true);			
 	}
 	
 	@Override
 	public void initGL(){
 		imageID = GL11.glGenLists(1);
-		if(simObject.getID()==3){
-			tex = Resources.get("resources/earth.bmp", "bmp");
+		if(isTextured){
+			tex = Resources.get(texturePath);
 			GL11.glNewList(imageID, GL11.GL_COMPILE);
 			GL11.glPushMatrix();
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -56,9 +58,8 @@ public class BodyRender extends RenderComponent {
 		GL11.glTranslated(body.getPos().x, body.getPos().y, body.getPos().z);
 		GL11.glColor3f(color[0], color[1], color[2]);
 
-		GL11.glRotated(23, 0, 1, 0);
-		GL11.glRotated(rotation, 0, 0, 1);
-		rotation+=.1; // TODO move this
+		GL11.glRotated(body.getTilt(), 0, 1, 0);
+		GL11.glRotated(body.getRotation(), 0, 0, 1);
 		
 		GL11.glCallList(imageID);
 
@@ -70,6 +71,12 @@ public class BodyRender extends RenderComponent {
 		GL11.glVertex3d(0, 0, 0);
 		GL11.glEnd();
 		GL11.glPopMatrix();
+	}
+	
+	public void setTexturePath(String path) {
+		isTextured = true;
+		image.setTextureFlag(true);
+		texturePath = path;
 	}
 
 	@Override
