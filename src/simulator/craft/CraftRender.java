@@ -24,6 +24,7 @@ public class CraftRender extends RenderComponent {
 			craft = (Craft) simObject;
 		}
 		GL11.glPushMatrix();
+		GL11.glDisable(GL11.GL_LIGHTING);
 		GL11.glTranslated(craft.getPos().x, craft.getPos().y, craft.getPos().z);
 		GL11.glColor3f(1f, 1f, 1f);
 		

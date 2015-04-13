@@ -5,17 +5,17 @@ import java.io.IOException;
 import org.lwjgl.opengl.Display;
 
 import simulator.gui.StartMenu;
-import simulator.integrators.LeapFrog;
 import simulator.utils.PropertiesManager;
 
 public class Simulator {
 	private static Simulation sim = new Simulation();
 
 	public static void main(String args[]) {
+		System.out.println("Debugging");
 		PropertiesManager.load();
 		StartMenu menu = null;
 		try {
-			menu = new StartMenu(Defines.width / 2, Defines.height / 2);
+			menu = new StartMenu(Defines.width/2, Defines.height/2);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

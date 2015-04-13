@@ -21,17 +21,17 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import simulator.utils.PropertiesManager;
 
 public class StartMenu {
-	private int width;
-	private int height;
 	private boolean selected;
 	private NumberFormat numFormat;
+	private final JFrame rootFrame;
+	private final JPanel rootPanel;
+	private File dataFile;
+	private FileButton continueButton;
 
 	public StartMenu(int width, int height) throws IOException {
-		this.width = width;
-		this.height = height;
 		selected = false;
-		final JPanel rootPanel = new JPanel(new GridBagLayout());
-		final JFrame rootFrame = new JFrame();
+		rootPanel = new JPanel(new GridBagLayout());
+		rootFrame = new JFrame();
 		rootFrame.setContentPane(rootPanel);
 
 		rootFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -39,42 +39,10 @@ public class StartMenu {
 		rootFrame.setVisible(true);
 		rootFrame.setTitle("Menu");
 
-		File jarPath = new File(this.getClass().getProtectionDomain()
-				.getCodeSource().getLocation().getPath());
-		final File rootDirectory = jarPath.getParentFile();
-
-		final String dataFilePath = PropertiesManager.getProperty("dataFile");
-
-		String simpleName = new File(dataFilePath).getName();
-		JButton continueButton = new JButton("Run " + simpleName);
-		continueButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				selected = true;
-				rootFrame.dispose();
-			}
-		});
-
-		final File dataFile = new File(rootDirectory.getPath() + "/resources");
-
-		JButton selectButton = new JButton("Select File");
-		selectButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setCurrentDirectory(dataFile);
-				fileChooser.setFileFilter(new FileNameExtensionFilter("*.csv",
-						"csv"));
-				int returnValue = fileChooser.showOpenDialog(null);
-				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					PropertiesManager.setProperty("dataFile", fileChooser
-							.getSelectedFile().getAbsolutePath());
-					selected = true;
-					rootFrame.dispose();
-				}
-			}
-		});
-
 		GridBagConstraints gbc = new GridBagConstraints();
 		Dimension buttonSize = new Dimension(200, 50);
+		
+		continueButton = new FileButton();
 
 		// Options/settings stuffs
 		final JPanel optionPanel = new JPanel(new GridBagLayout());
@@ -126,19 +94,91 @@ public class StartMenu {
 		gbc.gridy = 2;
 		backButton.setPreferredSize(buttonSize);
 		optionPanel.add(backButton, gbc);
+		
+		final JPanel editorPanel = new EditorPanel();
+		JButton editButton = new JButton("Edit Simulation");
+		editButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				rootFrame.setContentPane(editorPanel);
+				rootFrame.revalidate();
+			}
+		});
 
 		continueButton.setPreferredSize(buttonSize);
-		selectButton.setPreferredSize(buttonSize);
+		editButton.setPreferredSize(buttonSize);
 		optionButton.setPreferredSize(buttonSize);
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		rootPanel.add(continueButton, gbc);
 		gbc.gridy = 1;
-		rootPanel.add(selectButton, gbc);
+		rootPanel.add(editButton, gbc);
 		gbc.gridy = 2;
 		rootPanel.add(optionButton, gbc);
 
 		rootFrame.revalidate();
+	}
+	
+	@SuppressWarnings("serial")
+	private class FileButton extends JButton {
+		public FileButton() {
+			update();
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent ae) {
+					selected = true;
+					rootFrame.dispose();
+				}
+			});
+		}
+		
+		public void update() {
+			File jarPath = new File(this.getClass().getProtectionDomain()
+					.getCodeSource().getLocation().getPath());
+			final File rootDirectory = jarPath.getParentFile();
+
+			final String dataFilePath = PropertiesManager.getProperty("dataFile");
+			
+			String simpleName = new File(dataFilePath).getName();
+			this.setText("Run " + simpleName);
+			
+			dataFile = new File(rootDirectory.getPath() + "//resources");
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private class EditorPanel extends JPanel {
+		public EditorPanel() {
+			this.setLayout(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+
+			JButton selectButton = new JButton("Select File");
+			selectButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent ae) {
+					JFileChooser fileChooser = new JFileChooser();
+					fileChooser.setCurrentDirectory(dataFile);
+					fileChooser.setFileFilter(new FileNameExtensionFilter("*.csv",
+							"csv"));
+					int returnValue = fileChooser.showOpenDialog(null);
+					if (returnValue == JFileChooser.APPROVE_OPTION) {
+						PropertiesManager.setProperty("dataFile", fileChooser
+								.getSelectedFile().getAbsolutePath());
+					}
+				}
+			});
+			this.add(selectButton, gbc);
+			
+			JButton backButton = new JButton("Back");
+			backButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					rootFrame.setContentPane(rootPanel);
+					rootFrame.revalidate();
+					continueButton.update();
+				}
+			});
+			gbc.gridy = 1;
+			this.add(backButton, gbc);			
+		}
 	}
 
 	public boolean isSelected() {

@@ -13,22 +13,24 @@ import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glTranslated;
 
+import java.nio.FloatBuffer;
 import java.util.List;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
-import simulator.body.Body;
-import simulator.craft.Craft;
 import simulator.gui.GUI;
 import simulator.utils.Vector3D;
 
 public class Window {
 	private int windowWidth, windowHeight;
-	private double centerDistance = 50, yaw = 0, pitch = -120;
+	public static double centerDistance = 50;
+	public static double yaw = 0;
+	public static double pitch = -120;
 	private double horizontalTan;
 	private double aspect;
 	private GUI gui;
@@ -51,6 +53,7 @@ public class Window {
 		}
 
 		ready3D();
+		updateCamera();
 		
 		GL11.glShadeModel(GL11.GL_SMOOTH); // Enables Smooth Shading
 		GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Black Background
@@ -58,6 +61,35 @@ public class Window {
 		GL11.glDisable(GL11.GL_CULL_FACE);
 		GL11.glEnable(GL_BLEND);
 		GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
+		
+		initLighting();
+	}
+	
+	public void initLighting() {
+		FloatBuffer matSpecular = BufferUtils.createFloatBuffer(4);
+		matSpecular.put(1.0f).put(1.0f).put(1.0f).put(1.0f).flip();
+		
+		FloatBuffer lightPosition = BufferUtils.createFloatBuffer(4);
+		lightPosition.put(1.0f).put(1.0f).put(1.0f).put(0.0f).flip();
+		
+		FloatBuffer whiteLight = BufferUtils.createFloatBuffer(4);
+		whiteLight.put(1.0f).put(1.0f).put(1.0f).put(1.0f).flip();
+		
+		FloatBuffer lModelAmbient = BufferUtils.createFloatBuffer(4);
+		lModelAmbient.put(0.5f).put(0.5f).put(0.5f).put(1.0f).flip();
+		
+		GL11.glShadeModel(GL11.GL_SMOOTH);
+		GL11.glMaterial(GL11.GL_FRONT, GL11.GL_SPECULAR, matSpecular);
+		GL11.glMaterialf(GL11.GL_FRONT, GL11.GL_SHININESS, 50.0f);	
+		GL11.glLight(GL11.GL_LIGHT0, GL11.GL_POSITION, lightPosition);	
+		//GL11.glLight(GL11.GL_LIGHT0, GL11.GL_SPECULAR, whiteLight);
+		//GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, whiteLight);	
+		GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, lModelAmbient);
+		GL11.glEnable(GL11.GL_LIGHTING);
+		GL11.glEnable(GL11.GL_LIGHT0);	
+		//GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+		//GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT_AND_DIFFUSE);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
 	public boolean isActive() {
@@ -98,7 +130,9 @@ public class Window {
 		GL11.glDisable(GL_BLEND);
 		GL11.glEnable(GL11.GL_DEPTH_TEST); // Enables Depth Testing
 		GL11.glDepthFunc(GL11.GL_LEQUAL); // The Type Of Depth Test To Do
-		
+	}
+	
+	public void updateCamera() {
 		GL11.glTranslated(0, 0, -centerDistance);
 		GL11.glRotated(pitch, 1, 0, 0);
 		GL11.glRotated(yaw, 0, 0, 1);

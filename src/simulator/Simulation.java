@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
 
+import simulator.body.Body;
 import simulator.integrators.Integrator;
 import simulator.integrators.LeapFrog;
 
@@ -39,6 +41,7 @@ public class Simulation {
 		integrator.setTimeStep(window.getSpeedRequest());
 		window.clear();
 		window.ready3D();
+		window.updateCamera();
 		
 		// Stuff that can't run while physics is running
 		physicsLock.lock();
@@ -51,7 +54,7 @@ public class Simulation {
 		}
 		physicsLock.unlock();
 		
-		window.ready2D();
+		//window.ready2D();
 		//render2D
 		window.update();
 	}

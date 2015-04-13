@@ -12,7 +12,7 @@ public class PropertiesManager {
 	private static FileInputStream in;
 	private static FileOutputStream out;
 	private static final String PATH = "/resources/config.properties";
-	
+
 	public static void load() {
 		File jarPath = new File(PropertiesManager.class.getProtectionDomain()
 				.getCodeSource().getLocation().getPath());
@@ -20,7 +20,7 @@ public class PropertiesManager {
 		file = new File(rootDirectory + PATH);
 		prop = new Properties();
 	}
-	
+
 	public static String getProperty(String key) {
 		try {
 			in = new FileInputStream(file);
@@ -34,7 +34,7 @@ public class PropertiesManager {
 		System.out.println("no property found by the name of " + key);
 		return "ayy lmao (null)";
 	}
-	
+
 	public static void setProperty(String key, String value) {
 		prop.setProperty(key, value);
 		try {

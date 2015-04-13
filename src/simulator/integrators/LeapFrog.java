@@ -21,7 +21,7 @@ public class LeapFrog extends Integrator {
 	private double elapsedTime = 0;
 	public boolean isDynamic = true;
 	private double maxTimestep = 5E7;
-
+	
 	public LeapFrog(List<SimObject> bList, List<SimObject> cList) {
 		isDynamic = Boolean.parseBoolean(PropertiesManager.getProperty("dynamicTime"));
 		maxTimestep = Double.valueOf(PropertiesManager.getProperty("timestep")).longValue();
@@ -134,7 +134,7 @@ public class LeapFrog extends Integrator {
 			double realTimeStep = timeStep*elapsedTime;
 			realTimeStep = realTimeStep > maxTimestep ? maxTimestep : realTimeStep;
 			elapsedTime = realTimeStep;
-			System.out.println(); // TODO magically improves frame rate
+			//System.out.println(); // TODO magically improves frame rate
 			if(realTimeStep != 0) {
 				simulate(realTimeStep);
 			}
