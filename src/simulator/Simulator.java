@@ -7,6 +7,17 @@ import org.lwjgl.opengl.Display;
 import simulator.gui.StartMenu;
 import simulator.utils.PropertiesManager;
 
+/**
+ * References: 
+ * 
+ * [1] Celestia Development Team, Celestia (Version 1.6.1), [Computer
+ * Program]. Available at www.shatters.net/celestia/
+ * 
+ * [2] stackoverflow
+ * 
+ * @author s-2482153
+ *
+ */
 public class Simulator {
 	private static Simulation sim = new Simulation();
 
@@ -15,7 +26,7 @@ public class Simulator {
 		PropertiesManager.load();
 		StartMenu menu = null;
 		try {
-			menu = new StartMenu(Defines.width/2, Defines.height/2);
+			menu = new StartMenu(Defines.width / 2, Defines.height / 2);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
